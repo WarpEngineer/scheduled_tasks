@@ -322,7 +322,7 @@ function run_task () {
 	CWD=$PWD
 	cd "${Working_Directory}"
 	debug "Running ${Application_Name} ${Parameters} in directory ${Working_Directory}"
-	"${Application_Name}" "${Parameters}" &
+	"${Application_Name}" ${Parameters} &
 	PID=$!
 	debug "Started task with with ${PID}"
 	echo "${PID}" > "${PID_FILE}"
