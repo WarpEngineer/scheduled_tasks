@@ -324,7 +324,7 @@ function run_task () {
 	debug "Running ${Application_Name} ${Parameters} in directory ${Working_Directory}"
 	"${Application_Name}" ${Parameters} &
 	PID=$!
-	debug "Started task with with ${PID}"
+	debug "Started task with pid ${PID}"
 	echo "${PID}" > "${PID_FILE}"
 	debug "Wating for task to finish..."
 	wait "${PID}"
