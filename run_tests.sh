@@ -309,7 +309,7 @@ EOF
 # start one instance then test that launcher can start another
 LOG_LEVEL=0 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg &
 RESULT=$(LOG_LEVEL=7 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg 2>&1)
-EXPECTED="Started task with with"
+EXPECTED="Started task with pid"
 assert
 # make sure to wait for both scripts to finish before proceeding
 output "Waiting for test scripts"
