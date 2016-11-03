@@ -33,7 +33,7 @@
 set -o nounset
 
 # exit if anything returns an error
-set -o errexit
+#set -o errexit
 
 # Exit on error inside any functions or subshells.
 set -o errtrace
@@ -353,7 +353,7 @@ then
 	if [ -f "${PID_FILE}" ]
 	then
 		PID="$( cat ${PID_FILE} )"
-		RUNNING_PID="$( pgrep -f $( basename ${Application_Name} ) )"
+		RUNNING_PID="$( pgrep -f $( basename ${Application_Name} ) || echo -1 )"
 		if [ "${PID}" -eq "${RUNNING_PID}" ]
 		then
 			# still running so just exit
