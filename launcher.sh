@@ -353,8 +353,9 @@ then
 	if [ -f "${PID_FILE}" ]
 	then
 		PID="$( cat ${PID_FILE} )"
-		RUNNING_PID="$( pgrep -f $( basename ${Application_Name} ) || echo -1 )"
-		if [ "${PID}" -eq "${RUNNING_PID}" ]
+		RUNNING_PIDS="$( pgrep -f $( basename ${Application_Name} ) || echo -1 )"
+		#if [ "${PID}" -eq "${RUNNING_PID}" ]
+		if [[ ${RUNNING_PIDS} =~ (^|[[:space:]])${PID}($|[[:space:]]) ]]
 		then
 			# still running so just exit
 			info "Task is already running and Allow_Multiple is false. Exiting..."
