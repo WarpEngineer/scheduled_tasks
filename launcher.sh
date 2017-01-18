@@ -44,6 +44,9 @@ set -o pipefail
 # Turn on traces, useful while debugging but commented out by default
 # set -o xtrace
 
+# Set script version 
+__version="2017.01"
+
 # Set magic variables for current file, directory, os, etc.
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
@@ -125,6 +128,7 @@ read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -d --debug       Enables debug mode
   -h --help        This page
   -n --no-color    Disable color output
+  -V --version     Show version and exit
 EOF
 read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
  A script that is launched by cron that manages other tasks. It is given a configuration file that
@@ -237,6 +241,13 @@ fi
 # no color mode
 if [ "${arg_n}" = "1" ]; then
   NO_COLOR="true"
+fi
+
+# version mode
+if [ "${arg_V}" = "1" ]; then
+ # Version print exists with code 1
+ echo "Version: ${__version}" 2>&1
+ exit 1
 fi
 
 # help mode
