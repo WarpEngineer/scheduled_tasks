@@ -280,6 +280,7 @@ Parameters=""
 Active="true"
 Allow_Multiple="false"
 Comment=""
+Log_File=""
 
 [ ! -r ${arg_c} ] && emergency "can not read configuration file ${arg_c}"
 . ${arg_c}
@@ -321,6 +322,7 @@ info "Working_Directory="${Working_Directory}
 info "Active="${Active}
 info "Allow_Multiple="${Allow_Multiple}
 info "Comment="${Comment}
+info "Log_File="${Log_File}
 
 # if the task is not active, do nothing and just exit cleanly
 if [ ! "${Active}" = "true" ]
@@ -333,7 +335,12 @@ function run_task () {
 	CWD=$PWD
 	cd "${Working_Directory}"
 	debug "Running ${Application_Name} ${Parameters} in directory ${Working_Directory}"
-	"${Application_Name}" ${Parameters} &
+	if [ -n "${Log_File:-}" ]
+	then
+		"${Application_Name}" ${Parameters} >${Log_File} 2>&1 &
+	else
+		"${Application_Name}" ${Parameters} &
+	fi
 	PID=$!
 	debug "Started task with pid ${PID}"
 	echo "${PID}" > "${PID_FILE}"
