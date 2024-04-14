@@ -2,6 +2,7 @@
 # Based on a template by BASH3 Boilerplate v2.0.0
 # Copyright (c) 2013 Kevin van Zonneveld and contributors
 # http://bash3boilerplate.sh/#authors
+# Based on fork by WarpEngineer
 # https://github.com/WarpEngineer/bash3boilerplate
 
 #####################################
@@ -45,7 +46,7 @@ set -o pipefail
 # set -o xtrace
 
 # Set script version 
-__version="2017.01"
+__version="2024.04"
 
 # Set magic variables for current file, directory, os, etc.
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -247,7 +248,7 @@ fi
 if [ "${arg_V}" = "1" ]; then
  # Version print exists with code 1
  echo "Version: ${__version}" 2>&1
- exit 1
+ exit 0
 fi
 
 # help mode
@@ -279,6 +280,7 @@ fi
 Parameters=""
 Active="true"
 Allow_Multiple="false"
+Trigger_Script=""
 Comment=""
 Log_File=""
 
@@ -301,6 +303,11 @@ fi
 [ ! -x "${Application_Name:-}" ] && emergency "can not continue because ${Application_Name} is not found or not executable. "
 [ ! -d "${Working_Directory:-}" ] && emergency "can not continue because ${Working_Directory} does not exist. "
 
+if [ -n "${Trigger_Script}" ]
+then
+	[ ! -x "${Trigger_Script:-}" ] && emergency "can not continue because ${Trigger_Script} is not found or not executable. "
+fi
+
 ### Runtime
 ##############################################################################
 
@@ -319,6 +326,7 @@ info "Task_Name="${Task_Name}
 info "Application_Name="${Application_Name}
 info "Parameters="${Parameters}
 info "Working_Directory="${Working_Directory}
+info "Trigger_Script="${Trigger_Script}
 info "Active="${Active}
 info "Allow_Multiple="${Allow_Multiple}
 info "Comment="${Comment}
@@ -329,6 +337,16 @@ if [ ! "${Active}" = "true" ]
 then
 	info "Task is not active. Exiting..."
 	exit 0
+fi
+
+# if a trigger script is included, run it to check if the task is triggered
+if [ -n "${Trigger_Script}" ]
+then
+	if ! "${Trigger_Script}"
+	then
+		info "Trigger script returned unsuccessful so run condition not met. Exiting..."
+		exit 0
+	fi
 fi
 
 function run_task () {

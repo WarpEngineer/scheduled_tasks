@@ -93,6 +93,7 @@ function help () {
 function cleanup_before_exit () {
   [ -f _task_test.cfg  ] && rm _task_test.cfg
   [ -f _test_script.sh ] && rm _test_script.sh
+  [ -f _test_trigger_script.sh ] && rm _test_trigger_script.sh
   [ -d _run            ] && rm -rf _run
   info "Cleaning up. Done"
 }
@@ -250,6 +251,9 @@ else
 fi
 }
 
+# create temporary 'run' directory
+[ ! -d _run ] && mkdir _run
+
 # test no config file given
 output "Running 'no config file' test"
 RESULT=$(LOG_LEVEL=7 ./launcher.sh 2>&1)
@@ -283,12 +287,69 @@ EXPECTED="Task is not active. Exiting..."
 assert
 echo
 
+# create an unsuccessful test trigger script
+cat <<-'EOF' > _test_trigger_script.sh
+#!/bin/bash
+exit 1
+EOF
+chmod +x _test_trigger_script.sh
+
+# test exiting on unsuccessful trigger script
+output "Running 'unsuccessful trigger' test"
+# create config file for task
+cat <<-'EOF' > _task_test.cfg
+Task_Name="scheduler test task"
+EOF
+echo "Application_Name=\"${PWD}/launcher.sh\"" >> _task_test.cfg
+cat <<-'EOF' >> _task_test.cfg
+Parameters=""
+Working_Directory=""
+Trigger_Script="./_test_trigger_script.sh"
+Active="true"
+Allow_Multiple="false"
+Comment=""
+EOF
+RESULT=$(LOG_LEVEL=7 ./launcher.sh -c ./_task_test.cfg 2>&1)
+EXPECTED="Trigger script returned unsuccessful so run condition not met. Exiting..."
+assert
+echo
+
 # create a test script
 cat <<-'EOF' > _test_script.sh
 #!/bin/bash
-sleep 5
+sleep 3
 EOF
 chmod +x _test_script.sh
+
+# create a successful test trigger script
+cat <<-'EOF' > _test_trigger_script.sh
+#!/bin/bash
+exit 0
+EOF
+chmod +x _test_trigger_script.sh
+
+# test successful trigger script
+output "Running 'successful trigger' test"
+# create config file for task
+cat <<-'EOF' > _task_test.cfg
+Task_Name="scheduler test task"
+EOF
+echo "Application_Name=\"${PWD}/_test_script.sh\"" >> _task_test.cfg
+cat <<-'EOF' >> _task_test.cfg
+Parameters=""
+Working_Directory=""
+Trigger_Script="./_test_trigger_script.sh"
+Active="true"
+Allow_Multiple="false"
+Comment=""
+EOF
+RESULT=$(LOG_LEVEL=7 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg 2>&1)
+EXPECTED="Started task with pid"
+assert
+# make sure to wait for both scripts to finish before proceeding
+output "Waiting for test scripts"
+sleep 3
+echo
 
 # test multiple instances allowed
 output "Running 'multiple instances allowed' test"
@@ -304,8 +365,6 @@ Active="true"
 Allow_Multiple="true"
 Comment=""
 EOF
-# create temporary 'run' directory
-[ ! -d _run ] && mkdir _run
 # start one instance then test that launcher can start another
 LOG_LEVEL=0 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg &
 RESULT=$(LOG_LEVEL=7 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg 2>&1)
@@ -313,7 +372,7 @@ EXPECTED="Started task with pid"
 assert
 # make sure to wait for both scripts to finish before proceeding
 output "Waiting for test scripts"
-sleep 5
+sleep 3
 echo
 
 # test multiple instances not allowed - one instance already running
@@ -330,8 +389,6 @@ Active="true"
 Allow_Multiple="false"
 Comment=""
 EOF
-# create temporary 'run' directory
-[ ! -d _run ] && mkdir _run
 # start one instance then test that launcher can not start another
 LOG_LEVEL=0 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg &
 RESULT=$(LOG_LEVEL=7 DEFAULT_RUN_DIRECTORY="./_run" ./launcher.sh -c ./_task_test.cfg 2>&1)
@@ -339,7 +396,7 @@ EXPECTED="Task is already running"
 assert
 # make sure to wait for script to finish before proceeding
 output "Waiting for test script"
-sleep 5
+sleep 3
 echo
 
 output "Total Passed: ${PASSED}"
