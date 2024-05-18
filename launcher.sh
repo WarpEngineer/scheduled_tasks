@@ -61,7 +61,6 @@ NO_COLOR="${NO_COLOR:-}"    # true = disable color. otherwise autodetected
 # TODO: set defaults here as desired
 [ -z "${DEFAULT_CONFIG_FILE_LOCATION:-}" ] && DEFAULT_CONFIG_FILE_LOCATION="."
 [ -z "${DEFAULT_BIN_DIRECTORY:-}" ] && DEFAULT_BIN_DIRECTORY="."
-[ -z "${DEFAULT_RUN_DIRECTORY:-}" ] && DEFAULT_RUN_DIRECTORY="."
 
 ### Functions
 ##############################################################################
@@ -375,6 +374,7 @@ INSTANCE_ID="$( echo "${Task_Name}_${Application_Name}_${Parameters}" | (sha512s
 debug "INSTANCE_ID"=${INSTANCE_ID}
 
 # run directory for this instance
+[ -z "${DEFAULT_RUN_DIRECTORY:-}" ] && DEFAULT_RUN_DIRECTORY=${Working_Directory}
 RUN_DIRECTORY="${DEFAULT_RUN_DIRECTORY}/${INSTANCE_ID}"
 mkdir -p "${RUN_DIRECTORY}"
 [ ! -d "${RUN_DIRECTORY:-}" ] && emergency "can not continue because ${RUN_DIRECTORY} could not be created. "
